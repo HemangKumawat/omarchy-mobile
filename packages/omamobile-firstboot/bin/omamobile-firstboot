@@ -402,8 +402,9 @@ s_login() {
   [[ -n $session ]] || { echo "Omarchy's Wayland session (omarchy.desktop) isn't installed"; return 1; }
   mkdir -p "$ROOT/etc/sddm.conf.d" "$ROOT/var/lib/sddm"
   # A phone logs in by itself and then locks (lock-on-start, s_user_setup),
-  # like Android; the PIN or password opens the lock.
-  printf '[Autologin]\nUser=%s\nSession=%s.desktop\n' "$U" "$session" > "$ROOT/etc/sddm.conf.d/autologin.conf"
+  # like Android; the PIN or password opens the lock. Relogin: SDDM logs in
+  # again after the session ends, since a phone can't type at its greeter.
+  printf '[Autologin]\nUser=%s\nSession=%s.desktop\nRelogin=true\n' "$U" "$session" > "$ROOT/etc/sddm.conf.d/autologin.conf"
   printf '[Last]\nSession=%s.desktop\nUser=%s\n' "$session" "$U" > "$ROOT/var/lib/sddm/state.conf"
   chown -R sddm:sddm "$ROOT/var/lib/sddm" 2>/dev/null || true
 }
