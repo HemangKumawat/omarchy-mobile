@@ -19,6 +19,39 @@ Native Omarchy on mobile devices: Arch Linux ARM, Hyprland and Omarchy's own pac
 - **New on 2026-10-19:** the Pixel Fold boots to its cover screen and the Pixel 6 builds, both community ports ([docs/DEVICES.md](docs/DEVICES.md)), and the Pixel 4 runs a read-only first-light probe; the Tensor phones share one initramfs, with each phone's quirks packed from its descriptor; our first kernel patch went upstream (the battery's charging status) and was reviewed; first login invites you to pick an AI agent, with none preinstalled.
 - **New on 2026-10-13:** home screens with 47 built-in widgets (Simon Schubert's MIT-licensed omarchy-widgets, his OWL originals run by our own OWL runtime since 2026-10-14, plus an OWL widget Store tab with an approval sheet for what each widget may run) and your own widgets made with "Create with AI" through Omarchy's default agent, behind a crash guard; 19 quick-settings tiles with an editor; one app per screen, with a "Show with…" action; the phone's screen and input on a computer over USB (`omamobile-mirror`, `tools/phone-mirror`); a device descriptor (`device.conf`) for more than one phone; and a first installer (below), which passed its first clean reinstall.
 
+
+## Google Pixel 4 XL (`coral`, Qualcomm SM8150) — What's Working & What's Not Working
+
+> **Standalone Coral Source Tree (`v0.1.0`):** [`HemangKumawat/omarchy-mobile-coral`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.1.0) · **Full Device Matrix:** [`docs/DEVICES.md`](docs/DEVICES.md) · **Bring-Up Runbook:** [`device/coral/BRINGUP-M1.md`](device/coral/BRINGUP-M1.md) · **Hardware Log:** [`device/coral/NOTES.md`](device/coral/NOTES.md)
+
+| Subsystem | Status | Hardware / Driver | Details & Verification |
+| :--- | :---: | :--- | :--- |
+| **Boot** | **WIP** | `c2f2-0.5-8906123` ABL (`android-v2`), `6.17.0-sm8150` | Boots to Arch Linux ARM (`systemd`) via direct ABL header-v2 (`text_offset = 0x80000`, `lz4 -9` frame `04 22 4d 18`, 12-entry board-matched `sm8150-google-coral.dtb` + 12-entry no-op `dtbo.img`), RAM overlay on `ext4` `userdata` (`LABEL=omarchy-root`), and kernel `qcom-pon` reboot-reason latch (`0x88f = 2`). |
+| **Storage** | **testing** | UFS 2.1 (`ufshcd-qcom`, `sda`..`sdf`) | All 6 UFS LUNs enumerate; all 79 `sd*` block nodes forced `ro=1` via `blockdev --setro` in PID 1 (`userdata` mounted `ro,noload`). |
+| **Display** | **testing** | Samsung `AMB623RT01` (`panel-samsung-s6e3hc2`) | Native **1440x3040 @ 60 Hz** (`19:9`), VESA DSC 1.1 (`720x1520` slices, 8 bpc), 10-bit MIPI DCS backlight (`0..1023`), Wayland (`cage`) + DRM atomic KMS. |
+| **GPU** | **testing** | Qualcomm Adreno 640 (`msm_dreno` / Freedreno `FD640`) | `a640_sqe.fw` + `a640_gmu.bin` at `180..585 MHz`; OpenGL ES 3.2 & Vulkan 1.3 (Mesa Turnip). |
+| **Touch** | **testing** | STMicroelectronics FingerTip `fts` (`0x49` on `spi0`) | 10-finger multitouch (`1439x3039`) + double-tap wake (`KEY_WAKEUP`); all NVRAM/flash/calibration/CRC auto-reflash paths blocked in kernel (`coral-fts-readonly.patch`). |
+| **Buttons** | **testing** | `gpio-keys` + PM8150 `pon` `resin` | Volume Up (`KEY_VOLUMEUP`) and Power (`KEY_POWER`) verified via `libinput`. |
+| **USB net** | **testing** | `dwc3-qcom` ConfigFS (`ncm.usb0` + `rndis.usb0`) | Static `172.16.42.1/24` + DHCP (`172.16.42.2`..`172.16.42.50`) + `sshd`. |
+| **Wi-Fi** | **testing** | Qualcomm `WCN3990` (`ath10k_snoc`, `wlan0`) | Dual-band 802.11ac WPA2 association, DHCP, DNS, and HTTPS verified with `rmtfs -r -P -s` and read-only `tqftpserv`. |
+| **Bluetooth** | **WIP** | Qualcomm `WCN3990` (`btqca` / `hci_uart` on `serial0-0`) | `serial0-0` UART (`qcom,wcn3990-bt`) configured in DT; `bluetoothd` HCI bring-up in progress. |
+| **Battery** | **testing** | PM8150B `qcom-fg` (`pm8150b-fg`) + Maxim `max1720x` (`0x36`) | Dual fuel gauges live; PMIC SRAM word 328 die/batt temperature (`coral-fg-temp.patch`) and `max17301` non-volatile alert guard (`coral-gauge1730x.patch`). |
+| **Charging** | **testing** | PM8150B SMB5 (`qcom-smbx`) | Corrected SMB5 scaling (`3.60 V + N * 10 mV`, `50 mA` steps) clamped in kernel `smb_probe` to **`4.20 V` (`0x1070 = 0x3c`)** and **`500 mA` (`0x1061 = 0x0a`)**; stock hardware JEITA (`0x1090 = 0xdf`) untouched. |
+| **Haptics** | **testing** | Cirrus Logic `CS40L25A` (`0x43` on `i2c9`) | Ported `cs40l2x` + `input_ff` (`FF_PERIODIC`, `FF_CONSTANT`, `FF_GAIN`); bounded closed-loop `Redc` / `F0` read from read-only `/run/coral-persist/haptics/cs40l25a.cal`. |
+| **Torch** | **testing** | PM8150L `qcom,spmi-flash-led` (`led-0` / `led-1`) | Dual rear warm/cool white LEDs capped in DT at `60 mA` torch (`led-max-microamp = <60000>`). |
+| **GNSS** | **no** | PDS service on MPSS/QDSP6 | Not brought up yet. |
+| **AoC / DSPs** | **testing** | Qualcomm `ADSP`, `CDSP`, `SLPI` (`remoteproc` + FastRPC) | All 4 Hexagon DSPs (`adsp`, `cdsp`, `slpi`, `mpss`) running; `hexagonrpcd` serves SLPI registry from RAM-backed `tmpfs` (`openat2` guard; 123/123 `persist` files SHA-256 verified unchanged). |
+| **Speakers / mics** | **testing** | QDSP6 + dual `CS35L36` (`0x40`/`0x41`) + Knowles `IA8508` (`spi2.0`) | Stereo speakers clamped in kernel to **`-26.0 dB` (`608`)** digital ceiling, **`0 dB` (`0`)** read-only analog gain, and **`4.5 V` / `1600 mA`** boost limit (verified in a 23m10s continuous voice soak with 0 XRUNs); 3-mic capture live via `IA8508` runtime firmware push. |
+| **Sensors** | **testing** | SLPI SSC QMI (`qcom_ssc_boroughs`) | Accelerometer (`BMI160`), gyroscope (`BMI160`), magnetometer (`AK0991X`), barometric pressure (`BMP380`), ambient light (`TCS3701`), and proximity (`TCS3701`) live at 10–100 Hz. |
+| **Soli 60 GHz Radar** | **testing** | Infineon BGT60TR13C (`google.sensor.radar` on SLPI) | Presence, range (cm), approach/depart speed, and reach gesture streaming over SLPI QMI without proprietary vendor daemon. |
+| **Modem** | **testing** | Snapdragon X24 (`qcom-q6v5-mss`, `remoteproc3`) | MPSS boots to `running` via `rmtfs -r -P -s` (RAM-only EFS) and read-only `tqftpserv` serving `mcfg_sw.mbn`; cellular data/voice not enabled yet. |
+| **NFC** | **no** | ST21NFCD | Not in DT yet. |
+| **Cameras** | **testing** | Qualcomm Titan 170 `sm8150-camss` (5 sensors) | All 5 sensors (`IMX363` wide, `IMX481` tele, `IMX355` front, dual `VD6281` NIR) stream pristine 10-bit bayer/mono frames; **`LM36011` (`0x64` flood / `0x65` dot projector) IR drivers unbound/unloaded (`OFF`)**. |
+| **Suspend** | **WIP** | System / display idle | Screen blanking via DPMS/backlight (`0`) and double-tap touch wake (`KEY_WAKEUP`) work; deep PSCI system `s2idle` / `mem` suspend is `WIP`. |
+| **Fingerprint** | **-** | N/A | Hardware does not have a fingerprint reader (`coral` uses dual NIR cameras; IR emitters kept `OFF`). |
+
+---
+
 ## Quick start
 
 The installer is new: expect rough edges. You need a Pixel 7 Pro with an unlocked bootloader, an Omarchy (Arch) laptop with Docker, `android-tools` and `e2fsprogs`, and Google's factory image for the phone. Stock Android stays on slot A as the way back; installing erases `userdata`.
