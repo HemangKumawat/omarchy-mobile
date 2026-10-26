@@ -6,7 +6,9 @@ The C-PHY main and telephoto cameras needed one fix: the CSIS write DMA
 loses lines that arrive faster than about 400 MB/s, so the sensor driver
 now lengthens their lines (`samsung,max-line-throughput = <360>`, section
 CAM-M.5l). Front: F.5-F.7 passed. Telephoto: T.1, T.2, T.4, T.5 passed;
-its SEM1215SA lens NACKs (T.3), so it stays at a stop, out of focus.
+its SEM1215SA lens NACKed in T.3 and holds its I2C bus when driven, so it
+isn't driven: the telephoto is fixed-focus at its resting position, sharp on
+distant subjects (outdoors, 2026-10-26) and soft up close (docs/DEVICES.md).
 Kernel: int `9626f17f7` = `7.3.0-rc6-omamobile-push1-00511-g9626f17f7825`
 (the same code as 00504),
 overlays as `device.conf` (now with `camera-tele`). Earlier status (2026-10-13, evening): **the ultrawide works end to end through
