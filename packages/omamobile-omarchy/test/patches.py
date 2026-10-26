@@ -346,6 +346,12 @@ def real_package(t):
        and "sendInlineReply" in read(root, notif + "Service.qml")
        and "notificationReplyField" in read(root, notif + "components/NotificationCard.qml"),
        "real omarchy: notifications take an inline reply (0015)")
+    for name in ("omarchy-channel-set", "omarchy-refresh-pacman"):
+        text = read(root, "usr/bin/" + name)
+        guard = text.find("if [[ -x /usr/bin/omamobile-update ]]")
+        ok(guard >= 0 and (text.find("sudo ") < 0 or guard < text.find("sudo ")),
+           "real omarchy: %s refuses on a phone before it touches pacman (0016)" % name)
+        ok("RELEASES.md section 5.4" in text, "real omarchy: %s points at RELEASES 5.4" % name)
     rc, out = run(root, "apply", series=SERIES)
     ok(rc == 0 and "already applied" in out, "real omarchy: already applied")
     rc, _ = run(root, "verify")
