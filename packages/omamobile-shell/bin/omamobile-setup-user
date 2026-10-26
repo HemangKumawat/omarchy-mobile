@@ -335,6 +335,38 @@ menu_hide "x86_64-only installers" \
   install.gaming.steam install.gaming.minecraft install.gaming.geforce-now install.gaming.xbox-controllers \
   install.gaming.battlenet install.gaming.lutris install.gaming.heroic
 
+# Idle on a phone (TOUCH-PLAN 1.6): Omarchy's defaults show an animated
+# full-brightness screensaver after 2.5 minutes and lock after 5, on an OLED
+# panel. A phone locks (and blanks) after a minute and shows no screensaver.
+# Once, and only for a user without an idle block of their own (the phone
+# profile carries this one, so new users have it from the start); Omarchy's
+# Trigger > Toggle > Screensaver and the idle settings still change it.
+if omarchy-done ensure omamobile-idle; then
+  if python3 - "$config/shell.json" <<'PY'
+import json, os, sys
+path = sys.argv[1]
+try:
+    with open(path) as f:
+        config = json.load(f)
+except FileNotFoundError:
+    sys.exit(1)
+phone = {"screensaver": 0, "lock": 60}
+if "idle" not in config:
+    config["idle"] = phone
+    with open(path + ".new", "w") as f:
+        json.dump(config, f, indent=2)
+        f.write("\n")
+    os.replace(path + ".new", path)
+# The toggle follows when the idle block is the phone's (seeded now, or
+# from the profile)
+sys.exit(0 if config["idle"] == phone else 1)
+PY
+  then
+    mkdir -p ~/.local/state/omarchy/toggles
+    touch ~/.local/state/omarchy/toggles/screensaver-off
+  fi
+fi
+
 # Like Android, waking the phone from its screensaver shows the PIN lock
 # (patch 0006 honours the lock-after-screensaver toggle). Set once.
 if omarchy-done ensure omamobile-lock-after-screensaver; then

@@ -37,7 +37,7 @@ printf '[Desktop Entry]\nType=Application\nName=Disks\nNoDisplay=false\nExec=gno
 printf '[Desktop Entry]\nType=Application\nName=Papers\nExec=papers\n' >"$A/org.gnome.Papers.desktop"
 
 run() {
-  env -i HOME="$H" PATH="$F:/usr/bin:/bin" XDG_RUNTIME_DIR="$t" OMAMOBILE_SHELL_SHARE="$pkg" OMAMOBILE_SYSTEM_APPLICATIONS="$A" \
+  env -i HOME="${RUN_HOME:-$H}" PATH="$F:/usr/bin:/bin" XDG_RUNTIME_DIR="$t" OMAMOBILE_SHELL_SHARE="$pkg" OMAMOBILE_SYSTEM_APPLICATIONS="$A" \
     bash bin/omamobile-setup-user >"$t/out" 2>&1 || { cat "$t/out"; fail "omamobile-setup-user runs"; }
 }
 run
@@ -86,3 +86,22 @@ run
 [[ ! -e $U/org.gnome.DiskUtility.desktop ]] || fail "an override the user removed stays removed"
 grep -qx 'NoDisplay=true' "$U/foot-server.desktop" || fail "an app installed later is hidden"
 pass "desktop and admin apps are hidden once each, when installed, and a user's choice is kept"
+
+# Idle: a new user gets the profile's block and the screensaver toggle
+idle() { python3 -I -c 'import json, sys; print(json.dumps(json.load(open(sys.argv[1])).get("idle")))' "$1/.config/omarchy/shell.json"; }
+toggle() { [[ -e $1/.local/state/omarchy/toggles/screensaver-off ]]; }
+[[ $(idle "$H") == '{"screensaver": 0, "lock": 60}' ]] || fail "a new user's profile has the phone's idle block"
+toggle "$H" || fail "a new user's screensaver is off"
+# Users set up before this: one without an idle block, one with their own
+for who in plain own; do
+  h=$t/$who; mkdir -p "$h/.config/hypr" "$h/.config/omarchy" "$h/.local/state/omarchy/done"
+  cp "$H"/.config/hypr/*.lua "$h/.config/hypr/"
+  touch "$h/.local/state/omarchy/done/omamobile-shell-profile"
+  echo '{"version": 1, "plugins": []}' >"$h/.config/omarchy/shell.json"
+done
+echo '{"version": 1, "plugins": [], "idle": {"screensaver": 300, "lock": 0}}' >"$t/own/.config/omarchy/shell.json"
+RUN_HOME=$t/plain run
+RUN_HOME=$t/own run
+[[ $(idle "$t/plain") == '{"screensaver": 0, "lock": 60}' ]] && toggle "$t/plain" || fail "an earlier user without an idle block gets the phone's"
+[[ $(idle "$t/own") == '{"screensaver": 300, "lock": 0}' ]] && ! toggle "$t/own" || fail "a user's own idle block is kept, and their screensaver"
+pass "idle: lock after a minute, no screensaver, unless the user set their own"
