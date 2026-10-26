@@ -189,8 +189,8 @@ bin/omamobile capture <codename>-stock          # over adb; or in fastboot: getv
 | --- | --- | --- |
 | Pixel 7, 7a, Fold, Tablet | gs201 (Tensor G2) | our `gs201.dtsi` and every gs201 driver; mostly a board DTS |
 | Pixel 6, 6 Pro, 6a | gs101 (Tensor) | upstream mainline `gs101.dtsi`, `gs101-oriole.dts` and `gs101-raven.dts`; much of our gs201 work was ported *from* gs101 |
-| Pixel 8, 8 Pro, 8a | zuma (Tensor G3) | not started: new clock, pinctrl and SoC data; use gs201 as the pattern |
-| Pixel 9 family | zumapro (Tensor G4) | not started |
+| Pixel 8, 8 Pro, 8a | zuma (Tensor G3) | under way on the Pixel 8 Pro (husky): zuma's PMU, watchdogs, USB PHY and pin controllers are in linux-omarchy-mobile, the device tree is in review; use gs201 as the pattern for the rest |
+| Pixel 9 family | zumapro (Tensor G4) | under way on the Pixel 9a (tegu): its UFS host and PHY, core clocks, pin controllers, ACPM, SPI chip selects, the GPU's cache hash and the inherited display are in linux-omarchy-mobile; the board DTS isn't public yet |
 | Pixel 10 family | laguna (Tensor G5) | not started; a new SoC vendor generation, expect more differences |
 
 The same SoC does **not** mean the same board. The panel, touch controller, PMIC rails, GPIO assignments, battery model and firmware names all differ between phones. **Never copy interrupt numbers between SoCs**: gs201's GIC SPIs differ from gs101's, and gs201's EINT numbering even skips EINT19.
