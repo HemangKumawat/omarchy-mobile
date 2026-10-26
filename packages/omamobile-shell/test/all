@@ -349,6 +349,7 @@ fi
 pass "permission sheet"
 
 bash -n bin/omamobile-setup-user || fail "omamobile-setup-user parses"
+bash test/setup-user.sh || fail "omamobile-setup-user against a scratch home"
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 ./install "$tmp/root"
 [[ -x $tmp/root/usr/bin/omamobile-setup-user && -f $tmp/root/usr/share/omamobile/shell/profile/shell.json ]] \
