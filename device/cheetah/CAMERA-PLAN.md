@@ -3405,6 +3405,7 @@ omamobile-apps 0.1.1): GNOME Snapshot works with all four cameras.**
   sizes up to 3840x2400, and a 3840x2160 stream from the main camera ran
   through PipeWire (the 4080x2288 mode, WDMA errors 0). Higher-resolution
   photos need a patched Snapshot or another app.
+- *(Superseded 2026-10-26: later boots found the lens holds its I2C bus when driven, so the telephoto runs fixed-focus, sharp at distance and soft up close; see this plan's status line and [DEVICES](../../docs/DEVICES.md). The entry below is kept as the record of that test.)*
 - **Telephoto lens works** (int `1f83c16c0` = 00543): the SEM1215SA answers
   only while its sensor is powered, as stock powers it inside the sensor's
   sequence. Read-only first (00535, `boot_ms=20`, opened during a stream):
