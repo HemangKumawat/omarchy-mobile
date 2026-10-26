@@ -61,15 +61,35 @@ fi
 # list (v4l-utils comes with ffmpeg): hidden for this user with the usual
 # NoDisplay override in ~/.local/share/applications, which Omarchy's app
 # library honours. Still runnable from a terminal.
-if omarchy-done ensure omamobile-hide-dev-tools; then
-  apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+sysapps=${OMAMOBILE_SYSTEM_APPLICATIONS:-/usr/share/applications}
+apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+hide_app() {
+  local id=$1 src=$sysapps/$1.desktop
+  [[ -f $src && ! -e $apps/$id.desktop ]] || return 0
   mkdir -p "$apps"
+  sed '/^\[Desktop Entry\]/a NoDisplay=true' "$src" | grep -v '^NoDisplay=false' > "$apps/$id.desktop"
+}
+if omarchy-done ensure omamobile-hide-dev-tools; then
   for id in qv4l2 qvidcap assistant designer linguist qdbusviewer; do
-    src=/usr/share/applications/$id.desktop
-    [[ -f $src && ! -e $apps/$id.desktop ]] || continue
-    sed '/^\[Desktop Entry\]/a NoDisplay=true' "$src" | grep -v '^NoDisplay=false' > "$apps/$id.desktop"
+    hide_app "$id"
   done
 fi
+
+# Desktop and admin apps that don't fit a phone (TOUCH-PLAN 0.6, 3.4): Disks
+# offers Format and Edit on the phone's UFS (the storage guard keeps it
+# read-only, but it shouldn't be offered); Evince and Snapshot duplicate
+# Papers and the Camera app; Fcitx 5's settings configure an input method
+# the phone doesn't run; the rest are desktop tools. Omarchy's launcher.hides
+# already covers some of these for its own launcher; the override hides them
+# from any launcher. Each one once, when it is installed, so a user who
+# removes the override keeps the app.
+for id in org.gnome.DiskUtility org.gnome.Evince org.gnome.Snapshot fcitx5-configtool cmake-gui lstopo \
+          cups system-config-printer foot-server footclient; do
+  [[ -f $sysapps/$id.desktop ]] || continue
+  if omarchy-done ensure "omamobile-hide-app-$id"; then
+    hide_app "$id"
+  fi
+done
 
 # PIN or password (omamobile-set-pin records it): phones set up before the
 # choice existed used a PIN with the lock's number pad, so record that, once.

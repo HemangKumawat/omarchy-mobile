@@ -27,8 +27,17 @@ echo 'local omarchy_monitor_scale = 2' >"$H/.config/hypr/monitors.lua"
 printf '{\n  // Extend the Quickshell Omarchy menu with JSONC.\n  // "personal": {"icon":"","label":"Personal"},\n}\n' \
   >"$H/.config/omarchy/extensions/omarchy-menu.jsonc"
 
+# The system's desktop entries: some of the apps the phone hides, one of them
+# marked NoDisplay=false, and one app it keeps
+A=$t/applications; mkdir -p "$A"
+for id in org.gnome.DiskUtility org.gnome.Evince cups; do
+  printf '[Desktop Entry]\nType=Application\nName=%s\nExec=%s\n' "$id" "$id" >"$A/$id.desktop"
+done
+printf '[Desktop Entry]\nType=Application\nName=Disks\nNoDisplay=false\nExec=gnome-disks\n' >"$A/org.gnome.DiskUtility.desktop"
+printf '[Desktop Entry]\nType=Application\nName=Papers\nExec=papers\n' >"$A/org.gnome.Papers.desktop"
+
 run() {
-  env -i HOME="$H" PATH="$F:/usr/bin:/bin" XDG_RUNTIME_DIR="$t" OMAMOBILE_SHELL_SHARE="$pkg" \
+  env -i HOME="$H" PATH="$F:/usr/bin:/bin" XDG_RUNTIME_DIR="$t" OMAMOBILE_SHELL_SHARE="$pkg" OMAMOBILE_SYSTEM_APPLICATIONS="$A" \
     bash bin/omamobile-setup-user >"$t/out" 2>&1 || { cat "$t/out"; fail "omamobile-setup-user runs"; }
 }
 run
@@ -61,3 +70,19 @@ for id in style.bar.position.top update.omarchy install.gaming.retroarch; do
   grep -q "^$id false" <<<"$menu" && fail "Menu row $id stays"
 done
 pass "menu rows that break the phone are hidden once, by content, and a user's own entry is kept"
+
+U=$H/.local/share/applications
+for id in org.gnome.DiskUtility org.gnome.Evince cups; do
+  [[ $(grep -c '^NoDisplay=true$' "$U/$id.desktop") == 1 ]] || fail "$id is hidden from the launcher"
+  grep -c '^NoDisplay=false' "$U/$id.desktop" >/dev/null && fail "$id loses its NoDisplay=false"
+  grep -qx "Exec=$id" "$U/$id.desktop" || [[ $id == org.gnome.DiskUtility ]] || fail "$id keeps its entry"
+done
+[[ ! -e $U/org.gnome.Papers.desktop ]] || fail "Papers stays in the launcher"
+[[ ! -e $U/foot-server.desktop ]] || fail "an app that isn't installed gets no override"
+# The user brings Disks back; an app installed later is hidden at the next login
+rm "$U/org.gnome.DiskUtility.desktop"
+printf '[Desktop Entry]\nType=Application\nName=Foot Server\nExec=foot --server\n' >"$A/foot-server.desktop"
+run
+[[ ! -e $U/org.gnome.DiskUtility.desktop ]] || fail "an override the user removed stays removed"
+grep -qx 'NoDisplay=true' "$U/foot-server.desktop" || fail "an app installed later is hidden"
+pass "desktop and admin apps are hidden once each, when installed, and a user's choice is kept"
