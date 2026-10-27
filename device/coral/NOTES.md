@@ -6,14 +6,16 @@ kernel `6.17.0-sm8150` built from
 [the SM8150 kernel tree at commit `6963e3800a8e`][sm8150-kernel] (three commits
 past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
 `coral` kernel patch series, device trees, userspace patches, and initramfs in
-[`HemangKumawat/omarchy-mobile-coral`, tag `v0.2.1`][coral-repo]
-(`a77eeddcd1d97f9f43eb30963f6e49b120e4d946`; see
+[`HemangKumawat/omarchy-mobile-coral`, tag `v0.2.2`][coral-repo]
+(`8f9d23841b6caf667dc2d37e95a842d63dd9e047`, which is `v0.2.1`
+(`a77eedd13359ad91df05508ebe6ce6bdbbf992bc`) plus a corrected kernel commit list
+in `PROVENANCE.md`; see
 [`PROVENANCE.md`][coral-provenance])), newest first.
 
 [sm8150-kernel]: https://gitlab.postmarketos.org/soc/qualcomm-sm8150/linux/-/commit/6963e3800a8e5bf05d198c4481690814c8ab8651
 [sm8150-tag]: https://gitlab.postmarketos.org/soc/qualcomm-sm8150/linux/-/tree/v6.17.0-sm8150
-[coral-repo]: https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.1
-[coral-provenance]: https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/PROVENANCE.md
+[coral-repo]: https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.2
+[coral-provenance]: https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/PROVENANCE.md
 
 ## coral (Pixel 4 XL) in detail
 
@@ -51,28 +53,28 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
     the USB gadget helper while retaining BusyBox `watchdog -T 20 -t 5 /dev/watchdog0`
     (`qcom-wdt`, 20 s hardware timeout petted every 5 s across `chroot`) and
     the kernel `qcom-pon` Fastboot reboot-reason latch
-    ([`qcom-pon-recovery.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/qcom-pon-recovery.patch)).
+    ([`qcom-pon-recovery.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/qcom-pon-recovery.patch)).
   - **Early tethered rescue initramfs vs 22 October standalone `initramfs/init` [V]:**
     - During Oct 18–21 bring-up, the early tethered rescue initramfs (still
       visible in `v0.1.0`) checked `/sys/class/udc/*/state == configured` every
       10 seconds after the 120-second lease and executed `/bin/reboot-bootloader`
       if USB disconnected.
     - In the 22 October standalone `initramfs/init` published in `v0.2.1`
-      ([`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/init)),
+      ([`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/init)),
       the post-lease `check_control_ready` loop requires only `/proc/1/comm == systemd`
       and a live `/usr/bin/sshd` process without requiring an active USB host,
       so unplugged battery boots stay up and mark `coral_healthy=1`.
   - **Development image physical-access security note (`ttyGS0` root shell & empty root password in RAM) [V]:**
-    - [`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/init)
+    - [`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/init)
       spawns an unauthenticated root shell (`setsid /bin/sh </dev/ttyGS0 >/dev/ttyGS0 2>&1`)
       on the USB CDC ACM serial gadget (`ttyGS0`), and
-      [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/omarchy-userspace.sh)
+      [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/omarchy-userspace.sh)
       sets an empty password for `root` in the RAM overlay copy of `/etc/shadow`.
       Network SSH (`sshd`) is key-only (`PasswordAuthentication no`), but anyone
       with a physical USB cable connected to this development image has root.
   - **How the `qcom-pon` reboot-reason latch works (kernel SPMI `regmap`, zero userspace PMIC writes) [V]:**
     - In `drivers/power/reset/qcom-pon.c`
-      ([`qcom-pon-recovery.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/qcom-pon-recovery.patch)),
+      ([`qcom-pon-recovery.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/qcom-pon-recovery.patch)),
       `qcom_pon_probe()` checks `of_machine_is_compatible("google,coral")` and
       immediately writes `2` (bootloader/Fastboot) to `PON_SOFT_RB_SPARE`
       (`0x88f`) via the kernel's SPMI `regmap` (`qcom_pon_reboot_mode_write()`),
@@ -88,10 +90,10 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
       `coral_reboot_notify()` callback to write `0` to `PON_SOFT_RB_SPARE`.
       Userspace never touches PMIC registers directly.
   - **How `qcom-wdt` is fed after transitioning to Arch [V]:**
-    - [`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/init)
+    - [`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/init)
       starts BusyBox `watchdog -T 20 -t 5 /dev/watchdog0` in the initramfs root
       namespace, and
-      [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/omarchy-userspace.sh)
+      [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/omarchy-userspace.sh)
       transitions into Arch via
       `exec chroot /newroot /usr/lib/systemd/systemd --unit=graphical.target`
       rather than `switch_root`. Because `chroot` retains the initramfs root
@@ -102,7 +104,7 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
     associates to WPA2 Wi-Fi automatically (`wlan0`), and answers SSH over Wi-Fi
     while keeping `usb0` (`172.16.42.1/30`, CDC NCM + ACM) ready for hotplug.
 - **Read-only UFS guard (`blockdev --setro`) and experimental persistent-overlay finding [V]:**
-  - In [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/omarchy-userspace.sh),
+  - In [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/omarchy-userspace.sh),
     PID 1 runs a two-pass `for device in /dev/sd* /dev/vd* /dev/mmcblk*; do blockdev --setro "$device"; done`
     guard before starting `systemd` (once right after `findfs LABEL=omarchy-root`
     before mounting `/lower`, and a second time after mounting the read-only
@@ -123,12 +125,12 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
 
 - **All five camera sensors verified streaming over `sm8150-camss` [V]:**
   - Patched `sm8150-camss`
-    ([`kernel/patches/camera/001..033`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.1/kernel/patches/camera))
+    ([`kernel/patches/camera/001..033`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.2/kernel/patches/camera))
     with a 150 MHz `camnoc_axi` floor (`clk_set_min_rate` in `camss.c`),
     CAMNOC QoS programming (`camss-vfe-17x.c`), 3-phase C-PHY configuration
     (`camss-csiphy-3ph-1-0.c` + `camss-csiphy-sm8150-combo.h`), and 4-VC
     `csid-gen2` routing for all five sensors on `coral`
-    ([`sm8150-google-coral-cameras.dtsi`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/dts/sm8150-google-coral-cameras.dtsi)):
+    ([`sm8150-google-coral-cameras.dtsi`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/dts/sm8150-google-coral-cameras.dtsi)):
     1. **Rear wide (`imx363`, 12.2 MP, CCI0):** continuous V4L2 raw streaming
        (`1932` frames over 60 s, `0` sequence gaps) and full-resolution colour
        capture via `libcamera` 0.7.2 simple pipeline + CPU software ISP.
@@ -154,7 +156,7 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
     bound or loaded (`ir_emitters: "inhibited; lm36011 unbound and unloaded"`),
     and no userspace tool ever writes to `i2c1` `0x64` or `0x65`.
   - **In the isolated RAM-boot `leds-lm3601x-coral-off.h` diagnostic**
-    ([`kernel/patches/face/leds-lm3601x-coral-off.h`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/face/leds-lm3601x-coral-off.h)):
+    ([`kernel/patches/face/leds-lm3601x-coral-off.h`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/face/leds-lm3601x-coral-off.h)):
     any non-zero brightness request is unconditionally refused (`-EPERM`,
     `"coral safety gate refuses IR emitter activation"`), and the probe path
     only writes `LM3601X_ENABLE_REG (0x01) = 0x00` (Mode=00 Standby) and reads
@@ -172,9 +174,9 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
 - **Speakers and microphones (`Pixel4XL` ALSA card via QDSP6) and hardware gain ceiling [V]:**
   - Brought up `qcom_q6v5_pas` (`adsp`), `q6afe`, `q6asm`, `q6adm`, `q6routing`,
     and the `sm8150-coral` machine driver
-    ([`coral-audio.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-audio.patch)
-    + [`sm8150-coral.h`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/audio/sm8150-coral.h)
-    + [`sm8150-google-coral-audio.dtsi`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/dts/sm8150-google-coral-audio.dtsi))
+    ([`coral-audio.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-audio.patch)
+    + [`sm8150-coral.h`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/audio/sm8150-coral.h)
+    + [`sm8150-google-coral-audio.dtsi`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/dts/sm8150-google-coral-audio.dtsi))
     with:
     - **Dual Cirrus Logic `CS35L36` speaker amplifiers** on `i2c@c94000` (`0x40`
       bottom speaker, `0x41` top/earpiece speaker) over Tertiary MI2S (`1.536 MHz`
@@ -185,19 +187,19 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
   - **Enforced kernel speaker ceiling and 23-minute soak levels [V]:**
     - Because no DSP speaker-protection algorithm is running yet, the kernel
       sound card driver (`sm8150_coral_late_probe()` in
-      [`sm8150-coral.h`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/audio/sm8150-coral.h))
+      [`sm8150-coral.h`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/audio/sm8150-coral.h))
       enforces a hard ceiling in the kernel:
       - `Top Digital PCM Volume` and `Bottom Digital PCM Volume` have their
         kernel `platform_max` clamped to **`608` (`-26.0 dB`)**
         (`#define CORAL_DIGITAL_MAX 608 /* -26 dB; speaker-protection DSP is absent. */`),
-        matching [`userspace/audio/ucm2/Pixel4XL/HiFi.conf`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/userspace/audio/ucm2/Pixel4XL/HiFi.conf).
+        matching [`userspace/audio/ucm2/Pixel4XL/HiFi.conf`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/userspace/audio/ucm2/Pixel4XL/HiFi.conf).
       - `Top Analog PCM Volume` and `Bottom Analog PCM Volume` are forced to
         **`0` (`0 dB`, `CORAL_ANALOG_SAFE = 0`)** in `sm8150_coral_late_probe()`
         and have `SNDRV_CTL_ELEM_ACCESS_WRITE` stripped so userspace cannot
         raise analog gain above `0`.
       - In `sound/soc/codecs/cs35l36.c`
-        ([`coral-audio.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-audio.patch))
-        and [`sm8150-google-coral-audio.dtsi`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/dts/sm8150-google-coral-audio.dtsi),
+        ([`coral-audio.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-audio.patch))
+        and [`sm8150-google-coral-audio.dtsi`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/dts/sm8150-google-coral-audio.dtsi),
         the `CS35L36` boost converter is clamped to **`4.5 V`
         (`cirrus,boost-ctl-millivolt = <4500>`)** (fixing an upstream
         `cs35l36.c` bug that overwrote `bst_vctl` with `10 V`), with peak
@@ -217,11 +219,11 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
 - **SLPI sensor hub (`slpi.mdt` + FastRPC + QMI/QRTR SSC) and `persist` checksum verification [V]:**
   - Enabled `remoteproc_slpi` (`5c00000.remoteproc`,
     `qcom/sm8150/google/coral/slpi.mdt`), `fastrpc`
-    ([`coral-slpi.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-slpi.patch)),
+    ([`coral-slpi.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-slpi.patch)),
     and `hexagonrpcd` patched with a RAM-backed sensor registry
-    ([`hexagonrpc-ram-registry.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/userspace/hexagonrpc/hexagonrpc-ram-registry.patch)).
+    ([`hexagonrpc-ram-registry.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/userspace/hexagonrpc/hexagonrpc-ram-registry.patch)).
   - At service startup
-    ([`sensor-runtime.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/userspace/services/sensor-runtime.sh)),
+    ([`sensor-runtime.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/userspace/services/sensor-runtime.sh)),
     `persist` is mounted `ro,noload,nodev,nosuid,noexec` at `/run/coral-persist`,
     copied into `tmpfs` at `/run/coral-qcom/sensors/registry`, and confined via
     `openat2(..., RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS)`. All 123 files in
@@ -246,7 +248,7 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
     open (`WIP`).
 - **Haptics (`CS40L25A`) [V]:**
   - Ported `cs40l2x` (`1-0043` on `i2c9`, reset GPIO, wavetable DSP;
-    [`coral-cs40l2x-port.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-cs40l2x-port.patch))
+    [`coral-cs40l2x-port.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-cs40l2x-port.patch))
     and verified stock click waveform playback.
 - **Aftermarket battery note (`1-0036` `-ENXIO`), cell voltage/temperature telemetry, and PM8150B SMB5 charger clamp (`FV 0x3c`, `FCC 0x0a`, `JEITA 0xdf`, `DMA 0x00`) [V]:**
   - **Why `max1720x`/`max1730x` at `1-0036` returns `-ENXIO` on this handset (aftermarket replacement battery):**
@@ -255,18 +257,19 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
       OEM Maxim `MAX1720x`/`MAX1730x` fuel-gauge IC on `i2c9` (`0x36`). That
       missing fuel-gauge IC also prevented battery percentage reporting when
       this handset ran stock Android.
-    - Consequently, [`coral-gauge1730x.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-gauge1730x.patch)
-      probes `1-0036` cleanly on an OEM pack, while on this test unit `1-0036`
+    - Consequently, [`coral-gauge1730x.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-gauge1730x.patch)
+      is expected to probe `1-0036` on an OEM pack (not tested: this unit has no
+      OEM pack), while on this test unit `1-0036`
       returns `-ENXIO` (no ACK). Battery state-of-charge `%` is therefore
       unavailable on this unit (`WIP`), whereas live cell voltage (`4.13–4.21 V`
       via PM8150B `VBAT_SNS` ADC5) and thermistor temperature (`31.0 °C` via
       GEN4 FG SRAM word 328) work and are surfaced in the mobile shell by
-      [`tools/battery-status.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/tools/battery-status.patch)
+      [`tools/battery-status.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/tools/battery-status.patch)
       (which disables UPower's synthetic capacity warning and shows measured
       voltage and charging status from `/run/coral-phone/status.json`).
   - **What writes the charger registers:** The **kernel driver**
     `drivers/power/supply/qcom_smbx.c` (`smb_probe()` in
-    [`coral-charge.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-charge.patch))
+    [`coral-charge.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-charge.patch))
     via SPMI `regmap`, **not** userspace.
   - **Where the values come from (SMB2 vs SMB5 step math in `qcom_smbx.c`):**
     - Upstream `qcom_smbx.c` used PMI8998/SMB2 step math (`3.4875 V + N * 7.5 mV`
@@ -279,7 +282,7 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
       `(4400000 - 3487500) / 7500 = 121.6 -> 0x7a` (`122`) to `0x1070`, exceeding
       PM8150B's maximum valid SMB5 code (`0x77` = `4.79 V`) and pushing rested
       cell voltage to `4.447 V`.
-    - [`coral-charge.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-charge.patch)
+    - [`coral-charge.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-charge.patch)
       updates `qcom_smbx.c` to use SMB5 step scaling on `pm8150b` and sets
       `voltage-max-design-microvolt = <4200000>` and
       `constant-charge-current-max-microamp = <500000>` in DT. During
@@ -294,7 +297,7 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
     and `0x1094..0x109b` back via debugfs regmap to verify that stock's hardware
     JEITA protection (`0xdf`) remained active.
   - **`DMA 0x00`:** In `drivers/power/supply/qcom_fg.c`
-    ([`coral-fg-temp.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-fg-temp.patch)),
+    ([`coral-fg-temp.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-fg-temp.patch)),
     GEN4 fuel-gauge SRAM temperature reads (word 328) check `MEM_INTF_DMA_STS`
     (`0x4370`) for latched DMA errors (`0x00` = clean; if an earlier transaction
     latched `0x04`, the kernel driver pulses `MEM_INTF_CTL` bit 2 to clear it,
@@ -307,7 +310,7 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
     `qcom/sm8150/google/coral/modem.mdt`), `pd-mapper`, `rmtfs -r -P -s`
     serving memory-backed read-only copies of `modemst1`, `modemst2`, `fsg`, and
     `fsc`, `tqftpserv`
-    ([`0001-translate-serve-readonly-vendor-mbn-Pixel-MCFG-from-.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/userspace/tqftpserv/0001-translate-serve-readonly-vendor-mbn-Pixel-MCFG-from-.patch),
+    ([`0001-translate-serve-readonly-vendor-mbn-Pixel-MCFG-from-.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/userspace/tqftpserv/0001-translate-serve-readonly-vendor-mbn-Pixel-MCFG-from-.patch),
     mapping `/readonly/vendor/mbn/` requests to `<rproc fw dir>/mbn/`), and
     vendor board data (`bdwlan-coral` repackaged as
     `ath10k/WCN3990/hw1.0/board-2.bin` for
@@ -333,17 +336,17 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
     and HTTPS traffic.
 - **Display (`Samsung S6E3HC2` `1440x3040@60Hz` DSC 1.1) and Backlight [V]:**
   - Mainline `msm_dpu` + `panel-samsung-s6e3hc2`
-    ([`0001-coral-base-dts-and-s6e3hc2-panel.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/0001-coral-base-dts-and-s6e3hc2-panel.patch))
+    ([`0001-coral-base-dts-and-s6e3hc2-panel.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/0001-coral-base-dts-and-s6e3hc2-panel.patch))
     drives the `1440x3040` AMOLED panel over `DSI-1` with Display Stream
     Compression (DSC 1.1, 2 slices per line, slice `720x40`, 8 bpc, `vddio`
     `1.84 V`, `vci` `3.0 V` on `l4c`, reset `tlmm 67`).
   - Patched `dsi_host.c`
-    ([`coral-dsi-clock.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-dsi-clock.patch)
-    and [`coral-dsi-transfer-clocks.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-dsi-transfer-clocks.patch))
+    ([`coral-dsi-clock.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-dsi-clock.patch)
+    and [`coral-dsi-transfer-clocks.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-dsi-transfer-clocks.patch))
     to program `DSI_6G_FIFO_TIMING = 0x0bc` and keep DSI link clocks enabled
     around `msm_dsi_host_xfer_prepare()` / `unprepare()` so 10-bit big-endian
     brightness updates (`0..1023` on `/sys/class/backlight/ae94000.dsi.0`,
-    [`coral-panel-brightness.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-panel-brightness.patch))
+    [`coral-panel-brightness.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-panel-brightness.patch))
     and DPMS off/on transitions never race link power-down.
   - *Note on 90 Hz:* 60 Hz is clean (`0` DPU underruns); an experimental 90 Hz
     mode showed startup FIFO underruns before OPP/bandwidth scaling settled and
@@ -354,7 +357,7 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
     Hyprland hardware-accelerated at `1440x3040@60Hz` (scale `3.2`) with
     `omamobile-shell` and OWL widgets.
 - **Touchscreen (`STMicroelectronics FingerTip S` / `fts` on `spi0.0`) and full calibration/flash write guard [V]:**
-  - In [`coral-fts-readonly.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-fts-readonly.patch)
+  - In [`coral-fts-readonly.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-fts-readonly.patch)
     (`drivers/input/touchscreen/fts_touch/`), when `!info->board->auto_fw_update`
     (`st,disable-auto-fw-update` in `sm8150-google-coral.dts`), **every**
     firmware flash, panel init, CX tuning, MP-flag write, and CRC-error
@@ -379,5 +382,5 @@ past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
        created), and sysfs attributes `fwupdate`, `autotune`, `stm_fts_cmd`, and
        `infoblock_getdata` are removed from `fts_attr_group`.
   - Touch coordinates (`0..1439` x `0..3039`) and double-tap wake (`KEY_WAKEUP`
-    via [`coral-touch-wake.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-touch-wake.patch))
+    via [`coral-touch-wake.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-touch-wake.patch))
     work across screen blank/unblank cycles.

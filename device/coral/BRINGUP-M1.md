@@ -6,8 +6,10 @@ ARM / Omarchy 4.0.4 + Hyprland on `6.17.0-sm8150`, built from
 [the SM8150 kernel tree at commit `6963e3800a8e`][sm8150-kernel] (three commits
 past tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag]), plus the ordered
 `coral` kernel patch series, device trees, userspace patches, and initramfs
-published in [`HemangKumawat/omarchy-mobile-coral`, tag `v0.2.1`][coral-repo]
-(`a77eeddcd1d97f9f43eb30963f6e49b120e4d946`; see
+published in [`HemangKumawat/omarchy-mobile-coral`, tag `v0.2.2`][coral-repo]
+(`8f9d23841b6caf667dc2d37e95a842d63dd9e047`, which is `v0.2.1`
+(`a77eedd13359ad91df05508ebe6ce6bdbbf992bc`) plus a corrected kernel commit list
+in `PROVENANCE.md`; see
 [`PROVENANCE.md`][coral-provenance] for byte-level verification of the installed
 kernel `Image` and 12-entry DTB).
 
@@ -22,68 +24,68 @@ is no `vendor_boot`, `init_boot`, or `vendor_kernel_boot`).
 
 [sm8150-kernel]: https://gitlab.postmarketos.org/soc/qualcomm-sm8150/linux/-/commit/6963e3800a8e5bf05d198c4481690814c8ab8651
 [sm8150-tag]: https://gitlab.postmarketos.org/soc/qualcomm-sm8150/linux/-/tree/v6.17.0-sm8150
-[coral-repo]: https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.1
-[coral-provenance]: https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/PROVENANCE.md
-[coral-dts]: https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/dts/sm8150-google-coral.dts
+[coral-repo]: https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.2
+[coral-provenance]: https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/PROVENANCE.md
+[coral-dts]: https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/dts/sm8150-google-coral.dts
 
 ## 1. Sources and provenance
 
 - **Kernel base:** [the SM8150 kernel tree at commit `6963e3800a8e`][sm8150-kernel]
   ("power: supply: idtp9418: remove unused variable"), which is three commits
   ahead of tag [`v6.17.0-sm8150` (`379d8fe35c7c`)][sm8150-tag] on `sm8150/6.17`
-  (`ac44cb016300`, `a2b20090fc1c`, `6963e3800a8e`).
+  (`53a8b55839d1`, `01fc3dd3c831`, `6963e3800a8e`, each the parent of the next).
 - **Authoritative ordered kernel series ([`PROVENANCE.md`][coral-provenance]):**
-  - [`kernel/series/coral-30/`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.1/kernel/series/coral-30)
+  - [`kernel/series/coral-30/`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.2/kernel/series/coral-30)
     (patches `0001`..`0007` + `config`): `git am` on `6963e3800a8e` produces git
     tree `21eb1828b205f86d87333e77179e03a8f5b930b3`, which built the installed
     Kernel `#30` `Image` (`6.17.0-sm8150 #30 SMP PREEMPT Mon Oct 19 21:29:48 CEST 2026`,
     proven byte-identical to the installed `boot_a` `Image` except byte 10 where
     `tools/pack-bootimg.py` sets `text_offset = 0x80000`).
-  - [`kernel/series/coral-fec40357/`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.1/kernel/series/coral-fec40357)
-    (patches `0008`..`0011` + `config`, and combined [`kernel/patches/series`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/series)):
+  - [`kernel/series/coral-fec40357/`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.2/kernel/series/coral-fec40357)
+    (patches `0008`..`0011` + `config`, and combined [`kernel/patches/series`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/series)):
     `git am` on top of `coral-30` produces git tree
     `6d4115553ae5a9aec7b9e4ae23f77b2e4c4d7c4e`, which built the 12-entry
     installed DTB (`tools/build-kernel.sh <src> <out> --with-fec40357`, proven
     byte-for-byte identical at `sha256: 3efe241aa349ff260ef0312e1b0a3a611943f71b0939261729c42e3842c90058`)
     and the SLPI, audio, and camera modules.
-- **Per-topic kernel DTS and patches in [`HemangKumawat/omarchy-mobile-coral` (`v0.2.1`)][coral-repo]:**
+- **Per-topic kernel DTS and patches in [`HemangKumawat/omarchy-mobile-coral` (`v0.2.2`)][coral-repo]:**
   - Device trees:
     [`kernel/dts/sm8150-google-coral.dts`][coral-dts],
-    [`kernel/dts/sm8150-google-coral-audio.dtsi`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/dts/sm8150-google-coral-audio.dtsi),
-    [`kernel/dts/sm8150-google-coral-cameras.dtsi`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/dts/sm8150-google-coral-cameras.dtsi).
+    [`kernel/dts/sm8150-google-coral-audio.dtsi`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/dts/sm8150-google-coral-audio.dtsi),
+    [`kernel/dts/sm8150-google-coral-cameras.dtsi`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/dts/sm8150-google-coral-cameras.dtsi).
   - Base DTS & S6E3HC2 panel:
-    [`0001-coral-base-dts-and-s6e3hc2-panel.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/0001-coral-base-dts-and-s6e3hc2-panel.patch),
-    [`0002-coral-wifi-bt-firmware-dts.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/0002-coral-wifi-bt-firmware-dts.patch),
-    [`coral-dt1.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-dt1.patch),
-    [`coral-daily-dt.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-daily-dt.patch),
-    [`coral-safety-dt.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-safety-dt.patch).
+    [`0001-coral-base-dts-and-s6e3hc2-panel.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/0001-coral-base-dts-and-s6e3hc2-panel.patch),
+    [`0002-coral-wifi-bt-firmware-dts.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/0002-coral-wifi-bt-firmware-dts.patch),
+    [`coral-dt1.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-dt1.patch),
+    [`coral-daily-dt.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-daily-dt.patch),
+    [`coral-safety-dt.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-safety-dt.patch).
   - Early-boot PON Fastboot recovery latch:
-    [`qcom-pon-recovery.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/qcom-pon-recovery.patch).
+    [`qcom-pon-recovery.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/qcom-pon-recovery.patch).
   - DSI & display:
-    [`coral-dsi-clock.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-dsi-clock.patch),
-    [`coral-dsi-transfer-clocks.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-dsi-transfer-clocks.patch),
-    [`coral-panel-brightness.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-panel-brightness.patch),
-    [`coral-panel-daily.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-panel-daily.patch),
-    [`coral-panel-power-mode-daily.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-panel-power-mode-daily.patch).
+    [`coral-dsi-clock.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-dsi-clock.patch),
+    [`coral-dsi-transfer-clocks.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-dsi-transfer-clocks.patch),
+    [`coral-panel-brightness.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-panel-brightness.patch),
+    [`coral-panel-daily.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-panel-daily.patch),
+    [`coral-panel-power-mode-daily.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-panel-power-mode-daily.patch).
   - Touchscreen read-only guard & wake:
-    [`coral-fts-readonly.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-fts-readonly.patch),
-    [`coral-touch-wake.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-touch-wake.patch).
+    [`coral-fts-readonly.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-fts-readonly.patch),
+    [`coral-touch-wake.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-touch-wake.patch).
   - Charger, fuel gauge & haptics:
-    [`coral-charge.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-charge.patch),
-    [`coral-fg-temp.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-fg-temp.patch),
-    [`coral-gauge1730x.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-gauge1730x.patch),
-    [`coral-cs40l2x-port.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-cs40l2x-port.patch).
+    [`coral-charge.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-charge.patch),
+    [`coral-fg-temp.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-fg-temp.patch),
+    [`coral-gauge1730x.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-gauge1730x.patch),
+    [`coral-cs40l2x-port.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-cs40l2x-port.patch).
   - SLPI, audio & cameras:
-    [`coral-slpi.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-slpi.patch),
-    [`coral-audio.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/coral-audio.patch),
-    [`kernel/audio/sm8150-coral.h`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/audio/sm8150-coral.h),
-    [`kernel/patches/camera/001..033`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.1/kernel/patches/camera),
-    [`kernel/patches/face/leds-lm3601x-coral-off.h`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/face/leds-lm3601x-coral-off.h).
-- **Userspace patches, initramfs & self-contained build tools (`v0.2.1`):**
-  - [`userspace/hexagonrpc/hexagonrpc-ram-registry.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/userspace/hexagonrpc/hexagonrpc-ram-registry.patch) (against [`linux-msm/hexagonrpc`](https://github.com/linux-msm/hexagonrpc) `da7a3742ab8d`),
-  - [`userspace/tqftpserv/0001-translate-serve-readonly-vendor-mbn-Pixel-MCFG-from-.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/userspace/tqftpserv/0001-translate-serve-readonly-vendor-mbn-Pixel-MCFG-from-.patch) (against [`linux-msm/tqftpserv`](https://github.com/linux-msm/tqftpserv) `a9bde2f`),
-  - [`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/init) and [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/omarchy-userspace.sh),
-  - [`tools/build-kernel.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/tools/build-kernel.sh), [`tools/pack-matched-dtb.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/tools/pack-matched-dtb.py), [`tools/pack-bootimg.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/tools/pack-bootimg.py), [`tools/build-rootfs.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/tools/build-rootfs.py), and [`tools/battery-status.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/tools/battery-status.patch).
+    [`coral-slpi.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-slpi.patch),
+    [`coral-audio.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/coral-audio.patch),
+    [`kernel/audio/sm8150-coral.h`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/audio/sm8150-coral.h),
+    [`kernel/patches/camera/001..033`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.2/kernel/patches/camera),
+    [`kernel/patches/face/leds-lm3601x-coral-off.h`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/face/leds-lm3601x-coral-off.h).
+- **Userspace patches, initramfs & self-contained build tools (`v0.2.2`):**
+  - [`userspace/hexagonrpc/hexagonrpc-ram-registry.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/userspace/hexagonrpc/hexagonrpc-ram-registry.patch) (against [`linux-msm/hexagonrpc`](https://github.com/linux-msm/hexagonrpc) `da7a3742ab8d`),
+  - [`userspace/tqftpserv/0001-translate-serve-readonly-vendor-mbn-Pixel-MCFG-from-.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/userspace/tqftpserv/0001-translate-serve-readonly-vendor-mbn-Pixel-MCFG-from-.patch) (against [`linux-msm/tqftpserv`](https://github.com/linux-msm/tqftpserv) `a9bde2f`),
+  - [`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/init) and [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/omarchy-userspace.sh),
+  - [`tools/build-kernel.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/tools/build-kernel.sh), [`tools/pack-matched-dtb.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/tools/pack-matched-dtb.py), [`tools/pack-bootimg.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/tools/pack-bootimg.py), [`tools/build-rootfs.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/tools/build-rootfs.py), and [`tools/battery-status.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/tools/battery-status.patch).
 
 ## 2. Slots, development handset state (do not copy), and guarded install path
 
@@ -219,7 +221,7 @@ intermediate stage:
      causing an immediate placement failure prior to kernel entry.
    - Setting the 64-bit little-endian `text_offset` field at byte offset `8` of
      `arch/arm64/boot/Image` to `0x80000` (`struct.pack_into('<Q', raw, 8, 0x80000)`
-     in [`tools/pack-bootimg.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/tools/pack-bootimg.py),
+     in [`tools/pack-bootimg.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/tools/pack-bootimg.py),
      or `emit_64(0x80000)` in `arch/arm64/kernel/head.S`) makes the mainline
      `Image` header byte-compatible with `c2f2` ABL's placement logic.
 
@@ -236,7 +238,7 @@ intermediate stage:
      `qcom,msm-id` (`<0x153 0x20000>` for SM8150 v2 and `<0x153 0x10000>` for
      SM8150 v1) and `qcom,board-id`.
    - Each DTB is compiled with `dtc -@` so `/__symbols__` is present for ABL's
-     `libufdt` overlay pass. In [`tools/pack-matched-dtb.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/tools/pack-matched-dtb.py)
+     `libufdt` overlay pass. In [`tools/pack-matched-dtb.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/tools/pack-matched-dtb.py)
      (and `tools/build-kernel.sh --with-fec40357`), 12 copies of
      `sm8150-google-coral.dtb` are stamped with the 12 factory
      `(qcom,msm-id, qcom,board-id)` selector pairs from stock `dtbo.img`
@@ -253,13 +255,13 @@ intermediate stage:
 | Page size | `4096` | [V] stock `boot.img` header |
 | Base / kernel / ramdisk / second / tags / dtb offsets | `0x00000000` / `0x00008000` / `0x01000000` / `0x00000000` / `0x00000100` / `0x01f00000` | [V] `unpack_bootimg` on stock `TP1A.221005.002.B2` |
 | OS version / patch level | `13.0.0` / `2022-10` | [V] stock `boot.img` header |
-| Kernel payload | `Image.offset80000.lz4` (`04 22 4d 18` frame, `text_offset=0x80000`) | [V] [`tools/pack-bootimg.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/tools/pack-bootimg.py) |
-| DTB payload | 12-entry board-matched `sm8150-google-coral.dtb` (`qcom,msm-id` + `qcom,board-id`, built with `dtc -@`, `sha256: 3efe241a...`) | [V] [`tools/pack-matched-dtb.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/tools/pack-matched-dtb.py) |
-| Command line (`CONFIG_CMDLINE_FORCE=y`) | `rootwait ro rdinit=/init console=ttyAMA0,115200 console=ttyMSM0,115200n8 console=tty0 clk_ignore_unused pd_ignore_unused loglevel=7 coral.rescue panic=10 panic_on_oops=1 softlockup_panic=1 hung_task_panic=1 hung_task_timeout_secs=30` | [V] [`tools/build-kernel.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/tools/build-kernel.sh) |
+| Kernel payload | `Image.offset80000.lz4` (`04 22 4d 18` frame, `text_offset=0x80000`) | [V] [`tools/pack-bootimg.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/tools/pack-bootimg.py) |
+| DTB payload | 12-entry board-matched `sm8150-google-coral.dtb` (`qcom,msm-id` + `qcom,board-id`, built with `dtc -@`, `sha256: 3efe241a...`) | [V] [`tools/pack-matched-dtb.py`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/tools/pack-matched-dtb.py) |
+| Command line (`CONFIG_CMDLINE_FORCE=y`) | `rootwait ro rdinit=/init console=ttyAMA0,115200 console=ttyMSM0,115200n8 console=tty0 clk_ignore_unused pd_ignore_unused loglevel=7 coral.rescue panic=10 panic_on_oops=1 softlockup_panic=1 hung_task_panic=1 hung_task_timeout_secs=30` | [V] [`tools/build-kernel.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/tools/build-kernel.sh) |
 
 *Note on root device discovery vs UFS LUN ordering:* Rather than trusting a
 hardcoded `root=/dev/sda15` on the kernel command line,
-[`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/omarchy-userspace.sh)
+[`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/omarchy-userspace.sh)
 resolves the root partition dynamically via **`findfs LABEL=omarchy-root`** (with
 `PARTLABEL=userdata` / `UUID=` recommended over `/dev/sda15`). On SM8150 UFS,
 SCSI disk letters can reorder across reboots (`userdata` was observed shifting
@@ -268,7 +270,7 @@ from `/dev/sda15` to `/dev/sdb15` during display gate testing).
 ## 5. Storage guard, watchdog across `chroot`, `qcom-pon` latch, and security notes
 
 1. **Read-only UFS block guard (`blockdev --setro`) [V]:**
-   - In [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/omarchy-userspace.sh),
+   - In [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/omarchy-userspace.sh),
      PID 1 runs a two-pass `for device in /dev/sd* /dev/vd* /dev/mmcblk*; do blockdev --setro "$device"; done`
      loop before starting `systemd`: once immediately after `findfs LABEL=omarchy-root`
      (before mounting `/lower`), and a second time after mounting the read-only
@@ -315,11 +317,11 @@ from `/dev/sda15` to `/dev/sdb15` during display gate testing).
      sessions rather than before the first boot.
 
 3. **Hardware watchdog (`qcom-wdt`) across `chroot` into Arch [V]:**
-   - [`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/init)
+   - [`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/init)
      starts BusyBox `watchdog -T 20 -t 5 /dev/watchdog0` (`17c10000.watchdog`
      built-in with `CONFIG_QCOM_WDT=y` and `CONFIG_WATCHDOG_NOWAYOUT=y`, 20 s
      hardware timeout, 5 s pet interval) in the initramfs root namespace.
-   - Instead of `switch_root`, [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/omarchy-userspace.sh)
+   - Instead of `switch_root`, [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/omarchy-userspace.sh)
      transitions into Arch via
      `exec chroot /newroot /usr/lib/systemd/systemd --unit=graphical.target`.
      Because `chroot` keeps the initramfs root alive, the BusyBox `watchdog`
@@ -328,7 +330,7 @@ from `/dev/sda15` to `/dev/sdb15` during display gate testing).
 
 4. **Kernel `qcom-pon` Fastboot recovery latch and early vs standalone `initramfs/init` health loop [V]:**
    - **No userspace code writes PMIC registers.** In
-     [`kernel/patches/qcom-pon-recovery.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/kernel/patches/qcom-pon-recovery.patch),
+     [`kernel/patches/qcom-pon-recovery.patch`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/kernel/patches/qcom-pon-recovery.patch),
      `qcom_pon_probe()` in `drivers/power/reset/qcom-pon.c` checks
      `of_machine_is_compatible("google,coral")` and immediately writes `2`
      (bootloader/Fastboot) to `PON_SOFT_RB_SPARE` (`0x88f`) via the kernel's
@@ -344,17 +346,17 @@ from `/dev/sda15` to `/dev/sdb15` during display gate testing).
      `/sys/class/udc/*/state == configured` every 10 seconds after the 120-second
      lease and executed `/bin/reboot-bootloader` if USB was unplugged. In the
      22 October standalone build published in `v0.2.1`
-     ([`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/init)),
+     ([`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/init)),
      the post-lease check requires only `/proc/1/comm == systemd` and a live
      `/usr/bin/sshd` process (`check_control_ready` without requiring an active
      USB host), writes `1` to `/sys/bus/platform/drivers/qcom-pon/*/coral_healthy`,
      and stays up across unplugged battery boots.
 
 5. **Development image physical-access warning (unauthenticated `ttyGS0` root shell & empty root password in RAM) [V]:**
-   - [`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/init)
+   - [`initramfs/init`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/init)
      spawns an unauthenticated root shell (`setsid /bin/sh </dev/ttyGS0 >/dev/ttyGS0 2>&1`)
      on the USB CDC ACM serial gadget (`ttyGS0`), and
-     [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.1/initramfs/omarchy-userspace.sh)
+     [`initramfs/omarchy-userspace.sh`](https://github.com/HemangKumawat/omarchy-mobile-coral/blob/v0.2.2/initramfs/omarchy-userspace.sh)
      sets an empty password for `root` in the RAM overlay copy of `/etc/shadow`
      (`root::...`). While network SSH (`sshd`) is restricted to key-only
      authentication (`PasswordAuthentication no`), **anyone with physical USB
@@ -370,11 +372,11 @@ during this bring-up.
 
 **Which kernel commit/series built each kernel cited below ([`PROVENANCE.md`][coral-provenance]):**
 - **Installed `boot_a` kernel (`#30`, `Mon Oct 19 21:29:48 CEST 2026`):**
-  Built from public commit `6963e3800a8e` + [`kernel/series/coral-30`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.1/kernel/series/coral-30)
+  Built from public commit `6963e3800a8e` + [`kernel/series/coral-30`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.2/kernel/series/coral-30)
   (patches `0001`..`0007`, git tree `21eb1828b205f86d87333e77179e03a8f5b930b3`,
   proven byte-identical to the installed `boot_a` `Image` except byte 10
   `text_offset = 0x80000`), paired with the 12-entry DTB and modules built from
-  `coral-30` + [`kernel/series/coral-fec40357`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.1/kernel/series/coral-fec40357)
+  `coral-30` + [`kernel/series/coral-fec40357`](https://github.com/HemangKumawat/omarchy-mobile-coral/tree/v0.2.2/kernel/series/coral-fec40357)
   (patches `0008`..`0011`, git tree `6d4115553ae5a9aec7b9e4ae23f77b2e4c4d7c4e`,
   proven byte-identical `dtb-12` at `sha256: 3efe241aa349ff260ef0312e1b0a3a611943f71b0939261729c42e3842c90058`).
 - **Earlier bring-up kernels (`#3`, `#25`, `#27`):**
@@ -460,3 +462,18 @@ verification (with the USB serial redacted to `<SERIAL>`):
   qcom-pon c440000.spmi:pmic@0:pon@800: coral Fastboot recovery armed before userspace
   /sys/bus/platform/drivers/qcom-pon/c440000.spmi:pmic@0:pon@800/coral_healthy: 1
   ```
+
+## 7. Gates and rollback
+
+A record of the gates this bring-up used, corrected for this unit. On this
+development handset slot A carries the mainline image and `userdata` is `ext4`
+(see §2), so there is no stock fallback slot: the way back from every gate is
+Fastboot and a Google factory image, which wipes the Arch root. Slot B is
+untested on this unit.
+
+| Gate | Expect / pass | Stop condition | Rollback (this unit) |
+| --- | --- | --- | --- |
+| Stock capture and backups | The Google factory image for `coral` (`TP1A.221005.002.B2`) is downloaded and checksum-verified off the phone before any flash; the read-only modem/EFS/`persist` dump of §5 item 2, with `SHA256SUMS`, is taken before the next boot that starts `mpss` | Factory image missing or unverified; any partition unreadable or not `ro` | None needed (read-only). Note: on this unit the 12–22 October radio sessions ran before that dump |
+| Direct ABL boot and USB NCM | `uname -r` reports `6.17.0-sm8150`; `ssh root@172.16.42.1` connects over `usb0`; `qcom-wdt` active | Hang, watchdog reset loop, or no USB enumeration within 60 s | Reach Fastboot (hold Power about 15 s so the `qcom-pon` latch or `qcom-wdt` resets into Fastboot, or Volume Down + Power), then flash the factory image. Slot B is untested |
+| Read-only storage boundary | Every `/sys/class/block/sd*/ro` reads `1`; `/` is `overlay` over a read-only `/lower` (`LABEL=omarchy-root`) | Any physical partition reports `ro=0` in the default mode | Stop at once; reach Fastboot and flash the factory image. Slot B is untested |
+| KMS display, GPU and touch | `msm_dpu` + `S6E3HC2` at `1440x3040@60Hz`; Adreno 640 (`FD640`) renders Hyprland; `fts` touch events with the flash-write path disabled | Blank panel, FIFO underrun storm, or touch SPI fault | Reach Fastboot and flash the factory image. Slot B is untested |
